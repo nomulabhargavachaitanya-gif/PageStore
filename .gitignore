@@ -1,0 +1,7 @@
+build/
+*.o
+*.dat
+*.ndx
+*.tmp
+*.vacuum
+.DS_Store
