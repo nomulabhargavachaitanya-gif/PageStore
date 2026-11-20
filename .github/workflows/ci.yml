@@ -1,0 +1,30 @@
+name: PageStore CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-bench:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build CLI, TCP Server, Tests, and Benchmarks
+        run: make CC=${{ matrix.compiler }} all build/test_main build/fuzz_page build/bench_main
+
+      - name: Run Unit, WAL Recovery, Concurrency, B+ Tree, and Fuzz Tests
+        run: make CC=${{ matrix.compiler }} test
+
+      - name: Run AddressSanitizer + UndefinedBehaviorSanitizer Suite
+        run: make CC=${{ matrix.compiler }} test-asan
+
+      - name: Benchmark Regression Gate (>= 1M ops/sec warm cache)
+        if: matrix.compiler == 'gcc'
+        run: make bench-ci
